@@ -1,5 +1,6 @@
 package com.arcraiders.companion.ui.events
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,33 +12,31 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.arcraiders.companion.data.model.Event
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.arcraiders.companion.data.model.EventTimer
+import com.arcraiders.companion.ui.viewmodel.EventTimersViewModel
+import com.arcraiders.companion.ui.viewmodel.EventTimersUiState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun EventsScreen(
-    viewModel: EventsViewModel,
+    viewModel: EventTimersViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = uiState.isRefreshing,
-        onRefresh = { viewModel.refresh() }
-    )
     
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
+        modifier = modifier.fillMaxSize()
     ) {
-        when {
-            uiState.isLoading -> {
+        when (val state = uiState) {
+            is EventTimersUiState.Loading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            uiState.error != null -> {
+            is EventTimersUiState.Error -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -46,70 +45,104 @@ fun EventsScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = uiState.error!!,
+                        text = state.message,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.loadEvents() }) {
+                    Button(onClick = { viewModel.retry() }) {
                         Text("Retry")
                     }
                 }
             }
-            else -> {
+            is EventTimersUiState.Success -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.events) { event ->
-                        EventCard(event = event)
+                    items(state.timers) { timer ->
+                        EventTimerCard(timer = timer)
                     }
                 }
             }
         }
-        
-        PullRefreshIndicator(
-            refreshing = uiState.isRefreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventCard(event: Event) {
+fun EventTimerCard(timer: EventTimer) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            // Event name
             Text(
-                text = event.name,
-                style = MaterialTheme.typography.titleLarge
+                text = timer.event,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
             )
+            
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = event.description ?: "No description",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            if (event.startTime != null && event.endTime != null) {
-                Spacer(modifier = Modifier.height(8.dp))
+            
+            // Countdown display
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "Starts: ${event.startTime}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+                    text = timer.countdown ?: "Calculating...",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                Text(
-                    text = "Ends: ${event.endTime}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Days and times
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Days:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = timer.days.joinToString(", "),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "Times:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = timer.times.joinToString(", "),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }
