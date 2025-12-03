@@ -15,22 +15,77 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+// ARC Raiders Dark Theme (Primary theme for retrofuturistic 1980s arcade aesthetic)
+private val ArcRaidersDarkColorScheme = darkColorScheme(
+    primary = ArcCyan,              // Bright cyan for primary actions
+    onPrimary = ArcBlack,           // Dark text on primary
+    primaryContainer = ArcDarkGray,  // Dark container for primary
+    onPrimaryContainer = ArcCyan,    // Cyan text in containers
+    
+    secondary = ArcRed,              // Red/orange for secondary actions  
+    onSecondary = ArcWhite,          // White text on secondary
+    secondaryContainer = ArcDarkGray,
+    onSecondaryContainer = ArcRed,
+    
+    tertiary = ArcYellow,            // Yellow for tertiary actions
+    onTertiary = ArcBlack,
+    tertiaryContainer = ArcDarkGray,
+    onTertiaryContainer = ArcYellow,
+    
+    background = ArcBlack,           // Near-black background
+    onBackground = ArcCream,         // Cream text on background
+    
+    surface = ArcDarkGray,           // Dark surface
+    onSurface = ArcCream,            // Cream text on surface
+    surfaceVariant = ArcMediumGray,  // Medium surface variant
+    onSurfaceVariant = ArcLightGray, // Light gray text
+    
+    error = ArcError,                // Red error color
+    onError = ArcWhite,
+    errorContainer = ArcDarkGray,
+    onErrorContainer = ArcError,
+    
+    outline = ArcLightGray,          // Outlines
+    outlineVariant = ArcMediumGray,
+    
+    scrim = ArcBlack.copy(alpha = 0.8f)
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+// Light theme (optional - app is designed for dark mode)
+private val ArcRaidersLightColorScheme = lightColorScheme(
+    primary = ArcCyan,
+    onPrimary = ArcWhite,
+    primaryContainer = ArcCyan.copy(alpha = 0.2f),
+    onPrimaryContainer = ArcBlack,
+    
+    secondary = ArcRed,
+    onSecondary = ArcWhite,
+    secondaryContainer = ArcRed.copy(alpha = 0.2f),
+    onSecondaryContainer = ArcBlack,
+    
+    tertiary = ArcYellow,
+    onTertiary = ArcBlack,
+    tertiaryContainer = ArcYellow.copy(alpha = 0.2f),
+    onTertiaryContainer = ArcBlack,
+    
+    background = ArcWhite,
+    onBackground = ArcBlack,
+    
+    surface = ArcWhite,
+    onSurface = ArcBlack,
+    surfaceVariant = ArcLightGray.copy(alpha = 0.3f),
+    onSurfaceVariant = ArcBlack,
+    
+    error = ArcError,
+    onError = ArcWhite,
+    errorContainer = ArcError.copy(alpha = 0.2f),
+    onErrorContainer = ArcBlack
 )
 
 @Composable
 fun ARCRaidersCompanionTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = true, // Default to dark theme for 1980s aesthetic
+    dynamicColor: Boolean = false, // Disable dynamic color to preserve brand identity
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -38,18 +93,20 @@ fun ARCRaidersCompanionTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> ArcRaidersDarkColorScheme
+        else -> ArcRaidersLightColorScheme
     }
+    
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Use dark status bar to match retrofuturistic aesthetic
+            window.statusBarColor = ArcBlack.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
-
+    
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
