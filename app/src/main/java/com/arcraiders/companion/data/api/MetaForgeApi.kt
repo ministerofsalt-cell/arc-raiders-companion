@@ -51,4 +51,19 @@ interface MetaForgeApi {
     suspend fun getCraftingRecipeById(
         @Path("id") recipeId: String
     ): CraftingRecipe
+
+    // Event Timers - Live countdown data
+    @GET("event-timers")
+    suspend fun getEventTimers(
+        @Query("map") map: String? = null,
+        @Query("name") name: String? = null
+    ): EventTimersResponse
+
+    // Traders - Get all trader inventories
+    @GET("traders")
+    suspend fun getTraders(): TradersResponse
+
+    // ARCs - Missions/activities with loot data
+    @GET("arcs")
+    suspend fun getArcs(): ArcsResponse
 }
