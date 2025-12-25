@@ -2,8 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
-    id("org.jetbrains.kotlin.plugin.serialization")
-}
+    id("com.google.dagger.hilt.android")}
 
 android {
     namespace = "com.arcraiders.companion"
@@ -50,8 +49,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
+        kotlinCompilerExtensionVersion = "1.5.4"    }
 }
 
 dependencies {
